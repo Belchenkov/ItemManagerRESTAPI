@@ -32,6 +32,23 @@
 
     <div class="container">
         <div class="row">
+            <h1 class="text-uppercase text-center well well-lg">Add Item</h1>
+            <form id="itemForm" class="col-sm-8 col-sm-offset-2">
+                <div class="form-group">
+                    <label for="text">Text</label>
+                    <input type="text" class="form-control" name="text" id="text">
+                </div>
+                <div class="form-group">
+                    <label for="body">Body</label>
+                    <textarea class="form-control" name="body" id="body"></textarea>
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="btn btn-info btn-block" value="Add">
+                </div>
+            </form>
+        </div>
+        <hr>
+        <div class="row">
             <ul id="items" class="list-group"></ul>
         </div>
     </div>
@@ -47,6 +64,53 @@
 
             getItems();
 
+            // Submit Event
+            $('#itemForm').on('submit', function(e) {
+                e.preventDefault();
+
+                let text = $('#text').val();
+                let body = $('#body').val();
+
+                addItem(text, body);
+            });
+
+            // Insert Items using API
+            function addItem(text, body) {
+                $.ajax({
+                    method: 'POST',
+                    url: 'http://127.0.0.1:8000/api/items',
+                    data: {
+                        text: text,
+                        body: body
+                    }
+                }).done(function(item) {
+                    alert("Item # " + item.id + ' added');
+                    location.reload();
+                });
+            }
+
+            // Delete Event
+            $('body').on('click', '#delete-link', function(e) {
+                e.preventDefault();
+                let id = $(this).data('id');
+                
+                deleteItem(id);
+            });
+
+            // Delete Item through API
+            function deleteItem(id) {
+                 $.ajax({
+                    method: 'POST',
+                    url: 'http://127.0.0.1:8000/api/items/' + id,
+                    data: {
+                       _method: 'DELETE'
+                    }
+                }).done(function(item) {
+                    alert("Item # " + id + ' removed');
+                    location.reload();
+                });
+            }
+
             // Get Items from API
             function getItems() {
                 $.ajax({
@@ -56,9 +120,10 @@
 
                     $.each(items, function(key, item) {
                         output += `
-                            <li class="list-group-item">
+                            <li class="list-group-item" style="padding: 25px 15px">
                                 <strong>${key+1}. ${item.text}: </strong>
-                                ${item.body}
+                                ${item.body} 
+                                <a href="#" data-id="${item.id}" id="delete-link" class="btn btn-primary btn-sm pull-right">Delete</a>
                             </li>
                         `;
                     });
